@@ -8,8 +8,10 @@
  * and stored the data to ta file in an organised fashion
  */
 
+import java.io.BufferedWriter;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.List;
 
 import twitter4j.Status;
@@ -18,22 +20,34 @@ import twitter4j.TwitterException;
 import twitter4j.TwitterFactory;
 
 public class LiveTweet {
-	
-	public static void main(String args[]) throws TwitterException, NumberFormatException, IOException{
-		
-		Twitter twitter = TwitterFactory.getSingleton();
-	    List<Status> statuses = twitter.getHomeTimeline();
-	    System.out.println("Showing home timeline.");
-	    
-	    //create a local file to write the tweets
-	    FileOutputStream fos = new FileOutputStream("recentTweetList.txt");
-	    
-	    for (Status status : statuses) {
-	    	// read user name and status line from each tweet and write it to a file
-	        fos.write(Byte.parseByte((status.getUser().getName() + ":" +status.getText())));
-	    }
-	    //closing file
-	    fos.close();
-	}
 
+	public static void main(String args[]) throws IOException{
+		try {
+			// get Twitter singleton instance with default credentials
+			Twitter twitter = TwitterFactory.getSingleton();
+			List<Status> statuses;
+
+			statuses = twitter.getHomeTimeline();
+
+			System.out.println("Showing home timeline.");
+
+			//create a local file to write the tweets
+			BufferedWriter buffWritter = new BufferedWriter(
+					new OutputStreamWriter(new FileOutputStream("recentTweetList.txt"), "utf-8"));
+
+			for (Status status : statuses) {
+				// read user name and status line from each tweet and write it to a file
+				buffWritter.write(((status.getUser().getName() +
+						":\n" +status.getText()+"\nCreated on : "+status.getCreatedAt()+"\n\n")));
+			}
+			//closing file
+			buffWritter.close();
+
+		} catch (TwitterException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			System.out.println("Failed to get timeline: " + e.getMessage());
+            System.exit(-1);
+		}
+	}
 }
